@@ -1,0 +1,8 @@
+{
+  "name": "flower-shop",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:angusfretwell/flower-shop.git",
+  "author": "Angus Fretwell <angusfretwell@me.com>",
+  "license": "MIT"
+}
