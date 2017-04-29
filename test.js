@@ -116,7 +116,7 @@ describe('flower-shop', () => {
 
 	describe('#getItemBundles', () => {
 		it('should return the count for each bundles', () => {
-			expect(flowerShop.validateOrderItem(ROSES, 15)).to.be.true();
+			expect(flowerShop.getItemBundles(ROSES, 15)).to.be.eql(ITEM_BUNDLES);
 		});
 	});
 });
