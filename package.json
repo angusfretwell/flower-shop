@@ -4,5 +4,21 @@
   "main": "index.js",
   "repository": "git@github.com:angusfretwell/flower-shop.git",
   "author": "Angus Fretwell <angusfretwell@me.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "xo": {
+    "envs": [
+      "mocha"
+    ]
+  },
+  "scripts": {
+    "test": "mocha",
+    "lint": "xo"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "dirty-chai": "^1.2.2",
+    "mocha": "^3.3.0",
+    "sinon": "^2.1.0",
+    "xo": "^0.18.1"
+  }
 }
