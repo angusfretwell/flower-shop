@@ -96,7 +96,7 @@ describe('flower-shop', () => {
 
 	describe('#getProductByCode', () => {
 		it('should return the product that matches the specified code', () => {
-			expect(flowerShop.getProductByCode('R12')).to.equal(ROSES);
+			expect(flowerShop.getProductByCode('R12')).to.eql(ROSES);
 		});
 
 		it('should return empty if a matching product is not found', () => {
