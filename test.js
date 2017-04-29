@@ -58,27 +58,35 @@ describe('flower-shop', () => {
 		beforeEach(() => {
 			sinon.stub(flowerShop, 'getProductByCode').returns(ROSES);
 			sinon.stub(flowerShop, 'getItemBundles').returns(ITEM_BUNDLES);
-			sinon.spy(flowerShop, 'validateOrderItem');
-
-			flowerShop.getItem(ORDER_ITEMS[0]);
+			sinon.stub(flowerShop, 'validateOrderItem').returns(true);
 		});
 
 		it('should call #getProductByCode with the product code', () => {
+			flowerShop.getItem(ORDER_ITEMS[0]);
 			expect(flowerShop.getProductByCode.calledOnce).to.be.true();
 			expect(flowerShop.getProductByCode.calledWith('R12')).to.be.true();
 		});
 
 		it('should call #validateOrderItem with the product and quantity', () => {
-			expect(flowerShop.getProductByCode.calledOnce).to.be.true();
-			expect(flowerShop.getProductByCode.calledWith(ROSES, 15)).to.be.true();
+			flowerShop.getItem(ORDER_ITEMS[0]);
+			expect(flowerShop.validateOrderItem.calledOnce).to.be.true();
+			expect(flowerShop.validateOrderItem.calledWith(ROSES, 15)).to.be.true();
+		});
+
+		it('should throw an error if #validateOrderItem returns falsey', () => {
+			flowerShop.validateOrderItem.returns(false);
+			expect(() => flowerShop.getItem(ORDER_ITEMS[0]))
+				.to.throw('Invalid quantity entered for Roses');
 		});
 
 		it('should call #getItemBundles with the product and quantity', () => {
+			flowerShop.getItem(ORDER_ITEMS[0]);
 			expect(flowerShop.getItemBundles.calledOnce).to.be.true();
 			expect(flowerShop.getItemBundles.calledWith(ROSES, 15)).to.be.true();
 		});
 
 		it('should return the product, and count for each bundle', () => {
+			flowerShop.getItem(ORDER_ITEMS[0]);
 			expect(flowerShop.getItemBundles.calledOnce).to.be.true();
 			expect(flowerShop.getItemBundles.calledWith(ROSES, 15)).to.be.true();
 		});
