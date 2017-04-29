@@ -1,6 +1,9 @@
 const _ = require('lodash');
 const {PRODUCTS} = require('./config');
 
+const getSortedBundles = bundles =>
+	_(bundles).sortBy('quantity').reverse().value();
+
 exports.buildReceipt = () => {
 	//
 };
@@ -13,9 +16,7 @@ exports.getProductByCode = code =>
 	_.find(PRODUCTS, _.matchesProperty('code', code));
 
 exports.validateOrderItem = (product, quantity) =>
-	!_(product.bundles)
-		.sortBy('quantity')
-		.reverse()
+	!getSortedBundles(product.bundles)
 		.reduce((remainder, bundle) => remainder % bundle.quantity, quantity);
 
 exports.getItemBundles = () => {
