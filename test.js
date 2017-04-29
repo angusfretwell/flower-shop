@@ -28,16 +28,12 @@ const ORDER_ITEMS = [{
 
 const ITEM_BUNDLES = [{
 	count: 1,
-	bundle: {
-		quantity: 5,
-		price: 699
-	}
+	price: 1299,
+	quantity: 10
 }, {
 	count: 1,
-	bundle: {
-		quantity: 10,
-		price: 1299
-	}
+	price: 699,
+	quantity: 5
 }];
 
 describe('flower-shop', () => {

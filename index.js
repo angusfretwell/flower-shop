@@ -4,14 +4,6 @@ const {PRODUCTS} = require('./config');
 const getSortedBundles = bundles =>
 	_(bundles).sortBy('quantity').reverse().value();
 
-exports.buildReceipt = () => {
-	//
-};
-
-exports.getItem = () => {
-	//
-};
-
 exports.getProductByCode = code =>
 	_.find(PRODUCTS, _.matchesProperty('code', code));
 
@@ -26,6 +18,21 @@ exports.getItemBundles = (product, quantity) => {
 		.map(bundle => {
 			const count = _.floor(quantityLeft / bundle.quantity);
 			quantityLeft -= count * bundle.quantity;
-			return _.assign(bundle, {count});
+			return _.assign({}, bundle, {count});
 		});
 };
+
+exports.getItem = ({code, quantity}) => {
+	const product = exports.getProductByCode(code);
+
+	if (!exports.validateOrderItem(product, quantity)) {
+		throw new Error(`Invalid quantity entered for ${product.name}`);
+	}
+
+	return {
+		product: _.omit(product, 'bundles'),
+		bundles: exports.getItemBundles(product, quantity)
+	};
+};
+
+exports.buildReceipt = items => items.map(exports.getItem);
