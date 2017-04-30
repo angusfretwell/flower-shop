@@ -7,31 +7,39 @@ const getSortedBundles = bundles =>
 exports.getProductByCode = code =>
 	_.find(PRODUCTS, _.matchesProperty('code', code));
 
-exports.validateOrderItem = (product, quantity) =>
-	!getSortedBundles(product.bundles)
-		.reduce((remainder, bundle) => remainder % bundle.quantity, quantity);
-
-exports.getItemBundles = (product, quantity) => {
+exports.getItemBundles = (product, bundles, quantity) => {
 	let quantityLeft = quantity;
 
-	return getSortedBundles(product.bundles)
+	if (_.isEmpty(bundles)) {
+		throw new Error(`Invalid quantity entered for ${product.name}`);
+	}
+
+	const itemBundles = bundles
 		.map(bundle => {
 			const count = _.floor(quantityLeft / bundle.quantity);
 			quantityLeft -= count * bundle.quantity;
 			return _.assign({}, bundle, {count});
-		});
+		})
+		.filter(({count}) => count);
+
+	if (quantityLeft) {
+		return exports.getItemBundles(product, _.drop(bundles, 1), quantity);
+	}
+
+	return itemBundles;
 };
 
 exports.getItem = ({code, quantity}) => {
 	const product = exports.getProductByCode(code);
+	const bundles = getSortedBundles(product.bundles);
 
-	if (!exports.validateOrderItem(product, quantity)) {
-		throw new Error(`Invalid quantity entered for ${product.name}`);
+	if (!product) {
+		throw new Error(`Couldn't find product for code "${code}"`);
 	}
 
 	return {
 		product: _.omit(product, 'bundles'),
-		bundles: exports.getItemBundles(product, quantity)
+		bundles: exports.getItemBundles(product, bundles, quantity)
 	};
 };
 
