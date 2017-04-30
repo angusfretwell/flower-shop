@@ -1,40 +1,17 @@
 const sinon = require('sinon');
 const chai = require('chai');
 const dirtyChai = require('dirty-chai');
+const {PRODUCTS} = require('./config');
 const flowerShop = require('.');
 
 chai.use(dirtyChai);
 const {expect} = chai;
 
-const ROSES = {
-	name: 'Roses',
-	code: 'R12',
-	bundles: [{
-		quantity: 5,
-		price: 699
-	}, {
-		quantity: 10,
-		price: 1299
-	}]
-};
+const ROSES = PRODUCTS[0];
+const ROSES_BUNDLES = ROSES.bundles.reverse();
 
-const ORDER_ITEMS = [{
-	code: 'R12',
-	quantity: 15
-}, {
-	code: 'L09',
-	quantity: 9
-}];
-
-const ITEM_BUNDLES = [{
-	count: 1,
-	price: 1299,
-	quantity: 10
-}, {
-	count: 1,
-	price: 699,
-	quantity: 5
-}];
+const TULIPS = PRODUCTS[2];
+const TULIPS_BUNDLES = TULIPS.bundles.reverse();
 
 describe('flower-shop', () => {
 	describe('#buildReceipt', () => {
@@ -43,10 +20,13 @@ describe('flower-shop', () => {
 		});
 
 		it('should map over order items with #getItem', () => {
-			flowerShop.buildReceipt(ORDER_ITEMS);
+			flowerShop.buildReceipt([
+				{code: 'R12', quantity: 15},
+				{code: 'L09', quantity: 9}
+			]);
 			expect(flowerShop.getItem.calledTwice).to.be.true();
-			expect(flowerShop.getItem.calledWith(ORDER_ITEMS[0])).to.be.true();
-			expect(flowerShop.getItem.calledWith(ORDER_ITEMS[1])).to.be.true();
+			expect(flowerShop.getItem.calledWith({code: 'R12', quantity: 15})).to.be.true();
+			expect(flowerShop.getItem.calledWith({code: 'L09', quantity: 9})).to.be.true();
 		});
 
 		afterEach(() => {
@@ -57,50 +37,44 @@ describe('flower-shop', () => {
 	describe('#getItem', () => {
 		beforeEach(() => {
 			sinon.stub(flowerShop, 'getProductByCode').returns(ROSES);
-			sinon.stub(flowerShop, 'getItemBundles').returns(ITEM_BUNDLES);
-			sinon.stub(flowerShop, 'validateOrderItem').returns(true);
+			sinon.stub(flowerShop, 'getItemBundles').returns([
+				{count: 1, price: 1299, quantity: 10},
+				{count: 1, price: 699, quantity: 5}
+			]);
 		});
 
 		it('should call #getProductByCode with the product code', () => {
-			flowerShop.getItem(ORDER_ITEMS[0]);
+			flowerShop.getItem({code: 'R12', quantity: 15});
 			expect(flowerShop.getProductByCode.calledOnce).to.be.true();
 			expect(flowerShop.getProductByCode.calledWith('R12')).to.be.true();
 		});
 
-		it('should call #validateOrderItem with the product and quantity', () => {
-			flowerShop.getItem(ORDER_ITEMS[0]);
-			expect(flowerShop.validateOrderItem.calledOnce).to.be.true();
-			expect(flowerShop.validateOrderItem.calledWith(ROSES, 15)).to.be.true();
-		});
-
-		it('should throw an error if #validateOrderItem returns falsey', () => {
-			flowerShop.validateOrderItem.returns(false);
-			expect(() => flowerShop.getItem(ORDER_ITEMS[0]))
-				.to.throw('Invalid quantity entered for Roses');
-		});
-
-		it('should call #getItemBundles with the product and quantity', () => {
-			flowerShop.getItem(ORDER_ITEMS[0]);
+		it('should call #getItemBundles with the product, bundles and quantity', () => {
+			flowerShop.getItem({code: 'R12', quantity: 15});
 			expect(flowerShop.getItemBundles.calledOnce).to.be.true();
-			expect(flowerShop.getItemBundles.calledWith(ROSES, 15)).to.be.true();
+			expect(flowerShop.getItemBundles.calledWith(ROSES, ROSES_BUNDLES, 15))
+				.to.be.true();
 		});
 
 		it('should return the product, and count for each bundle', () => {
-			flowerShop.getItem(ORDER_ITEMS[0]);
-			expect(flowerShop.getItemBundles.calledOnce).to.be.true();
-			expect(flowerShop.getItemBundles.calledWith(ROSES, 15)).to.be.true();
+			expect(flowerShop.getItem({code: 'R12', quantity: 15})).to.eql({
+				product: {code: 'R12', name: 'Roses'},
+				bundles: [
+					{count: 1, price: 1299, quantity: 10},
+					{count: 1, price: 699, quantity: 5}
+				]
+			});
 		});
 
 		afterEach(() => {
 			flowerShop.getProductByCode.restore();
-			flowerShop.validateOrderItem.restore();
 			flowerShop.getItemBundles.restore();
 		});
 	});
 
 	describe('#getProductByCode', () => {
 		it('should return the product that matches the specified code', () => {
-			expect(flowerShop.getProductByCode('R12')).to.eql(ROSES);
+			expect(flowerShop.getProductByCode('R12')).to.eql(PRODUCTS[0]);
 		});
 
 		it('should return empty if a matching product is not found', () => {
@@ -108,19 +82,26 @@ describe('flower-shop', () => {
 		});
 	});
 
-	describe('#validateOrderItem', () => {
-		it('should return truthy if the quantity fits into available bundles', () => {
-			expect(flowerShop.validateOrderItem(ROSES, 15)).to.be.true();
-		});
-
-		it('should return falsey if the quantity does not fit into available bundles', () => {
-			expect(flowerShop.validateOrderItem(ROSES, 14)).to.be.false();
-		});
-	});
-
 	describe('#getItemBundles', () => {
-		it('should return the count for each bundles', () => {
-			expect(flowerShop.getItemBundles(ROSES, 15)).to.be.eql(ITEM_BUNDLES);
+		it('should return the count for each bundle', () => {
+			expect(flowerShop.getItemBundles(ROSES, ROSES_BUNDLES, 15))
+				.to.eql([
+					{count: 1, price: 1299, quantity: 10},
+					{count: 1, price: 699, quantity: 5}
+				]);
+		});
+
+		it('should handle edge case order items', () => {
+			expect(flowerShop.getItemBundles(TULIPS, TULIPS_BUNDLES, 13))
+				.to.eql([
+					{count: 2, price: 995, quantity: 5},
+					{count: 1, price: 595, quantity: 3}
+				]);
+		});
+
+		it('should throw an error if the item quantity is invalid', () => {
+			expect(() => flowerShop.getItemBundles(ROSES, ROSES_BUNDLES, 11))
+				.to.throw('Invalid quantity entered for Roses');
 		});
 	});
 });
