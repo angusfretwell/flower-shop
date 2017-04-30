@@ -1,6 +1,7 @@
 const sinon = require('sinon');
 const chai = require('chai');
 const dirtyChai = require('dirty-chai');
+const {exec, pwd} = require('shelljs');
 const {PRODUCTS} = require('./config');
 const flowerShop = require('.');
 
@@ -107,19 +108,66 @@ describe('flower-shop', () => {
 });
 
 describe('cli', () => {
-	it('should call #buildReceipt with the specified order', () => {
-
-	});
-
 	it('should throw an error if an order is not specified', () => {
-
+		expect(exec(`${pwd()}/cli.js`, {silent: true}).stderr.trim())
+			.to.equal('Order file must be specified');
 	});
 
-	it('should throw an error if the order format is invalid', () => {
-
-	});
-
-	it('should output the response from #buildOrder in JSON format', () => {
-
+	it('should output the response from #buildReceipt in JSON format', () => {
+		expect(
+			exec(`${pwd()}/cli.js example-order.txt`, {silent: true}).stdout.trim()
+		).to.equal(`
+[
+  {
+    "product": {
+      "name": "Roses",
+      "code": "R12"
+    },
+    "bundles": [
+      {
+        "quantity": 10,
+        "price": 1299,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "product": {
+      "name": "Lilies",
+      "code": "L09"
+    },
+    "bundles": [
+      {
+        "quantity": 9,
+        "price": 2495,
+        "count": 1
+      },
+      {
+        "quantity": 6,
+        "price": 1695,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "product": {
+      "name": "Tulips",
+      "code": "T58"
+    },
+    "bundles": [
+      {
+        "quantity": 5,
+        "price": 995,
+        "count": 2
+      },
+      {
+        "quantity": 3,
+        "price": 595,
+        "count": 1
+      }
+    ]
+  }
+]
+		`.trim());
 	});
 });
